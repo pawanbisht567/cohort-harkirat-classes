@@ -1,10 +1,13 @@
-name = "my-project-till-lesson-12"
+name = "backend"
 main = "src/index.ts"
 compatibility_date = "2024-11-16"
 
 # compatibility_flags = [ "nodejs_compat" ]
 
-# [vars]
+[vars]
+DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiNzdlM2ZhNzAtYTYwZS00NzFmLWJkOWYtMGMzMjdkOWUzNmM5IiwidGVuYW50X2lkIjoiZmFhMTlkNTg4MzU4MGU3MzYyZTI1OTcxNTc1NmU1ZjFkMGVhMWFkYzg5YjgyNWRkMDNlOWU4ZGM1Mzk5ZDUwNSIsImludGVybmFsX3NlY3JldCI6ImFhOTcxZGI4LWI4YzItNDZkZi04OTIzLWMyMjQxYTg2OGJhNyJ9.6jr1szCxhqbMYLyOWuPHDeN2_W8Y4Ha21kK9T7Vxj0k"
+
+JWT_SECRET="MY-SECRET-KEY"
 # MY_VAR = "my-variable"
 
 # [[kv_namespaces]]
