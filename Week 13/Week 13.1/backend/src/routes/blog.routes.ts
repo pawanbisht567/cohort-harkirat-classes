@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { decode, sign, verify } from 'hono/jwt';
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate';
+import { createBlogInput, updateBlogInput } from '@pawan16/medium-common';
 
 // Initialize the Hono class just like we iniitalize the Express app.
 export const blogRouter = new Hono<{
@@ -44,7 +45,13 @@ blogRouter.post('/', async (c) => {
     }).$extends(withAccelerate());
   
     const body = await c.req.json();
-  
+    const { success, error } = createBlogInput.safeParse(body);
+    if(!success) {
+        c.status(411)
+        return c.json({
+          message: "Inputs are invalid"
+        })
+    }
     try {
           const blog = await prisma.post.create({
               data: {
@@ -69,19 +76,25 @@ blogRouter.post('/', async (c) => {
     }).$extends(withAccelerate());
   
     const body = await c.req.json();
-  
+    const { success, error } = updateBlogInput.safeParse(body);
     try {
-          const blog = await prisma.post.update({
-            where:{
-              id: body.id
-            },
-            data: {
-                  title: body.title,
-                  content: body.content,
-              }
+      if(!success) {
+        c.status(411)
+        return c.json({
+          message: "Inputs are invalid"
+        })
+    }
+        const blog = await prisma.post.update({
+          where:{
+            id: body.id
+          },
+          data: {
+                title: body.title,
+                content: body.content,
+            }
           });
-          c.status(200)
-          return c.json({ message: "Post Updated Successfully", blog })
+        c.status(200)
+        return c.json({ message: "Post Updated Successfully", blog })
       } catch(e) {
           c.status(403);
           return c.json({ msg : e})

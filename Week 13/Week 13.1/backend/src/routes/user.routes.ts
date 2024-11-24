@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { decode, sign, verify } from 'hono/jwt';
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate';
+import { signupInput, siginInput } from '@pawan16/medium-common';
 
 // Initialize the Hono class just like we iniitalize the Express app.
 export const userRouter = new Hono<{
@@ -10,6 +11,8 @@ export const userRouter = new Hono<{
     JWT_SECRET: string,
   }
 }>();
+
+
 
 // POST /api/v1/user/signup
 userRouter.post('/signup', async (c) => {
@@ -20,10 +23,16 @@ userRouter.post('/signup', async (c) => {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-  
+    
     const body = await c.req.json();
-  
+    const { success, error } = signupInput.safeParse(body);
     try {
+          if(!success) {
+            c.status(411)
+            return c.json({
+              message: "Inputs are invalid"
+            })
+          }
           const user = await prisma.user.create({
               data: {
                   email: body.email,
@@ -35,33 +44,47 @@ userRouter.post('/signup', async (c) => {
       const token = await sign({ id: user.id}, c.env.JWT_SECRET);
           return c.json({ token : token, message: "Signup" })
       } catch(e) {
-           c.status(403);
-       console.log(e)
-       return c.json({ msg : e})
+          c.status(403);
+          console.log(e)
+          return c.json({ msg : e})
       }
   })
 
 // POST /api/v1/user/signin
 userRouter.post('/signin', async (c) => {
-  console.log('awdawd')
     const prisma = new PrismaClient({
       datasourceUrl: c.env?.DATABASE_URL,
     }).$extends(withAccelerate());
   
     const body = await c.req.json();
-    const user = await prisma.user.findUnique({
-      where: {
-        email: body.email,
-        password: body.password
-      }
-    });
-  
-    if (!user) {
-      c.status(403);
-      return c.json({ error: "user not found" });
+    const { success, error } = siginInput.safeParse(body);
+    if(!success) {
+      c.status(411)
+        return c.json({
+          message: "Inputs are invalid"
+        })
     }
-    console.log(user);
-    const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
-    return c.json({ jwt });
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: body.email,
+          password: body.password
+        }
+      });
+    
+      if (!user) {
+        c.status(404);
+        return c.json({ error: "user not found" });
+      }
+      console.log(user);
+      const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
+      return c.json({ jwt });
+    } catch(error) {
+          c.status(403);
+          console.log(error)
+          return c.json({ msg : error})
+    }
+    
+    
   })  
 
