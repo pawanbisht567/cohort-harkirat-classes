@@ -1,5 +1,6 @@
 'use client'
 
+// SEO optimized
 export function Button() {
     function handler() {
         console.log('Clicked me')
